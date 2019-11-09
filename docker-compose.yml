@@ -1,0 +1,33 @@
+version: '3'
+services:
+  db:
+    image: "postgres:latest"
+    container_name: "lotus_flare_db"
+    environment:
+      - POSTGRES_USER=lotus_flare
+      - POSTGRES_PASSWORD=lotus_flare
+      - POSTGRES_DB=lotus_flare
+    expose:
+      - "5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+  web:
+    image: app
+    restart: always
+    command: python3 app/main.py
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/code
+    links:
+      - "db"
+    depends_on:
+      - "migration"
+  migration:
+    build: .
+    image: app
+    #command: python app/migrate_db.py migrate
+    links:
+      - "db"
+    depends_on:
+      - "db"
